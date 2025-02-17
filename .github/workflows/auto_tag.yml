@@ -1,9 +1,9 @@
 name: auto tag first characters of the commit sha1
 
 on:
-  #push:
-  #  branches:
-  #    - main
+  push:
+    branches:
+      - main
 
 jobs:
   tag:
@@ -18,10 +18,23 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Get commit SHA
-        id: get_sha
-        run: echo "SHA=$(echo $GITHUB_SHA | cut -c1-4)" >> $GITHUB_ENV
-
-      - name: Create tag
-        run: git tag $SHA && git push origin $SHA
+          
+      - name: Create tag from commit message
+        run: |
+          # 获取最近一次提交的完整 commit message
+          commit_message=$(git log -1 --pretty=%B)
+          echo "Commit message:"
+          echo "$commit_message"
+          
+          # 以两个连续的换行符拆分，获取第一段内容
+          tag_name=$(echo "$commit_message" | awk 'BEGIN{RS="\n\n"} {print; exit}')
+          echo "Tag candidate: '$tag_name'"
+          
+          # 如果第一段有值，则创建 tag；否则跳过
+          if [ -z "$tag_name" ]; then
+            echo "No valid tag name found in commit message, skipping tag creation."
+            exit 0
+          fi
+          
+          echo "Creating tag: $tag_name"
+          git tag "$tag_name" && git push origin "$tag_name"
