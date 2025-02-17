@@ -34,6 +34,6 @@ jobs:
           fi
           
           # 以两个连续换行符拆分，获取第一段内容
-          tag_name=$(echo "$commit_message" | awk 'BEGIN{RS="\n\n"} {print; exit}')
+          tag_name=$(echo "$commit_message" | awk 'BEGIN{RS="\n\n"} {a[NR]=$0} END{if (NR>=2){print a[2]} else {print ""}}')
           echo "Creating tag: $tag_name"
           git tag "$tag_name" && git push origin "$tag_name"
