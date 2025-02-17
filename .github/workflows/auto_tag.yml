@@ -1,0 +1,22 @@
+name: auto tag first characters of the commit sha1
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get commit SHA
+        id: get_sha
+        run: echo "SHA=$(echo $GITHUB_SHA | cut -c1-4)" >> $GITHUB_ENV
+
+      - name: Create tag
+        run: git tag $SHA && git push origin $SHA
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
