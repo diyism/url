@@ -26,15 +26,13 @@ jobs:
           echo "Commit message:"
           echo "$commit_message"
           
-          # 以两个连续的换行符拆分，获取第一段内容
-          tag_name=$(echo "$commit_message" | awk 'BEGIN{RS="\n\n"} {print; exit}')
-          echo "Tag candidate: '$tag_name'"
-          
-          # 如果第一段有值，则创建 tag；否则跳过
-          if [ -z "$tag_name" ]; then
-            echo "No valid tag name found in commit message, skipping tag creation."
+          # 检查 commit message 是否包含 "\n\n" 分隔符
+          if ! echo "$commit_message" | grep -q $'\n\n'; then
+            echo "Commit message does not contain a delimiter. Skipping tag creation."
             exit 0
           fi
           
+          # 以两个连续换行符拆分，获取第一段内容
+          tag_name=$(echo "$commit_message" | awk 'BEGIN{RS="\n\n"} {print; exit}')
           echo "Creating tag: $tag_name"
           git tag "$tag_name" && git push origin "$tag_name"
